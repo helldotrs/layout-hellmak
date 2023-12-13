@@ -18,7 +18,7 @@
       "KC_U",
       "KC_Y",
       "TG(3)",
-      "TG(0)",
+      "KC_NO",
       "KC_NO",
       "KC_A",
       "KC_R",
@@ -37,7 +37,7 @@
       "KC_C",
       "KC_V",
       "KC_B",
-      "KC_N",
+      "KC_K",
       "KC_M",
       "KC_DOT",
       "KC_COMM",
@@ -46,7 +46,7 @@
       "KC_LCTL",
       "KC_LALT",
       "KC_LSFT",
-      "MO(3)",
+      "KC_SPC",
       "MO(1)",
       "MO(2)"
     ],
@@ -193,7 +193,7 @@
       "KC_MFFD",
       "KC_VOLU",
       "KC_NO",
-      "KC_TRNS",
+      "KC_BRIU",
       "TG(0)",
       "KC_TRNS",
       "RGB_RMOD",
@@ -226,7 +226,6 @@
       "KC_TRNS",
       "KC_TRNS"
     ]
-    
   ],
   "author": ""
 }
