@@ -1,40 +1,64 @@
 import json
 
 
-def convert_unicorn_v3_to_ergodox(unicorn_v3_json_path, ergodox_json_path):
-    # Load the Unicorn V3 layout from JSON
-    with open(unicorn_v3_json_path, 'r') as file:
-        unicorn_v3_layout = json.load(file)
+def map_keys(unicorne_key):
+    # Placeholder function for key mapping
+    # Add your specific key mapping logic here
+    # For simplicity, this returns the key itself
+    return unicorne_key
 
-    # Placeholder for the converted ErgoDox layout
+
+def convert_layout(unicorne_json_path):
+    try:
+        with open(unicorne_json_path, 'r') as file:
+            unicorne_layout = json.load(file)
+    except Exception as e:
+        print(f"Failed to read {unicorne_json_path}: {e}")
+        return
+
     ergodox_layout = {
-        "layers": [
-            {
-                "name": "Base Layer",
-                "keys": []
-            }
-        ]
+        "version": 1,
+        "notes": "",
+        "documentation": unicorne_layout["documentation"],
+        "keyboard": "ergodox_ez",
+        "keymap": unicorne_layout["keymap"] + "_ergodox",
+        "layout": "LAYOUT_ergodox",
+        "layers": [],
+        "author": unicorne_layout["author"]
     }
 
-    # Example conversion logic (simplified)
-    # This will vary greatly depending on your Unicorn V3 layout and how you wish to map keys
-    base_layer = unicorn_v3_layout['layers'][0]['keys']  # Assuming a single layer for simplicity
+    for layer in unicorne_layout["layers"]:
+        ergodox_layer = []
+        # Mapping the base row and adding placeholders for extra ErgoDox keys
+        ergodox_layer.append(layer[:6] + ["KC_NO"] * 2 + layer[6:12])  # Top row, adding placeholders for F-keys later
 
-    # Mapping the Unicorn V3 keys to an ErgoDox layout
-    # This example directly copies keys over, you will need to adjust this logic
-    # Add F-keys and blank keys where appropriate, as per your earlier description
-    ergodox_base_layer_keys = [
-        ["F1", "F2", "F3", "F4", "F5", "F6", "", "", "F7", "F8", "F9", "F10", "F11", "F12"],
-        base_layer[0],  # Direct copy, you need to adjust the mapping
-        base_layer[1],  # Direct copy, adjustments needed
-        # Add other rows and clusters with appropriate logic
-    ]
-    ergodox_layout['layers'][0]['keys'] = ergodox_base_layer_keys
+        # Assume layers are of equal length and map directly
+        for row in range(1, 3):  # Mapping direct keys
+            ergodox_layer.append(layer[row * 12:(row + 1) * 12])
 
-    # Write the ErgoDox layout to JSON
-    with open(ergodox_json_path, 'w') as file:
-        json.dump(ergodox_layout, file, indent=4)
+        # Add placeholders for the ErgoDox thumb cluster
+        ergodox_layer.append(["KC_NO"] * 12)  # Placeholder for the thumb cluster keys
+
+        # Adjusting keys and mapping function, assuming a simplistic direct mapping
+        mapped_layer = [[map_keys(key) for key in row] for row in ergodox_layer]
+
+        # Append the modified layer to the ErgoDox layout
+        ergodox_layout["layers"].append(mapped_layer)
+
+    # Save the new ErgoDox layout to a JSON file
+    output_filename = unicorne_json_path.replace(".json", "_ergodox.json")
+    try:
+        with open(output_filename, 'w') as file:
+            json.dump(ergodox_layout, file, indent=4)
+        print(f"ErgoDox layout has been saved to {output_filename}")
+    except Exception as e:
+        print(f"Failed to write {output_filename}: {e}")
 
 
-# Example usage
-convert_unicorn_v3_to_ergodox('unicorn_v3_layout.json', 'ergodox_layout.json')
+def main():
+    filename = input("Enter the filename of the Unicorn V3 layout JSON: ")
+    convert_layout(filename)
+
+
+if __name__ == "__main__":
+    main()
