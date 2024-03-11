@@ -1,52 +1,58 @@
 import json
 
-def convert_unicorne_to_ergodox(unicorne_json, ergodox_template_json):
-    # Initialize the ErgoDox layer with the template
-    ergodox_layer = ergodox_template_json["layers"][0].copy()
+def convert_unicorne_to_ergodox(unicorne_layout):
+    # Initialize ErgoDox layer with KC_NO for all positions
+    ergodox_layer = ["KC_NO"] * 76  # ErgoDox has 76 keys in its layout
 
-    # Define mappings from Unicorne to ErgoDox based on the provided symbols
-    key_mappings = {
-        "KC_F": "F-keys",  # This will be handled separately due to its unique mapping
-        "KC_B": "Blank",
-        "KC_S": "Side",
-        "KC_L": "Left Alphabetics",
-        "KC_R": "Right Alphabetics",
-        "KC_I": "Inner",
-        "KC_C": "Control"
-    }
+    # Direct mapping of keys from Unicorne to ErgoDox, considering typical layout positions
+    # This is a simplification. You'll need to adjust indices based on your mapping requirements
+    unicorne_to_ergodox_index_map = [
+        # Left hand side
+        15, 16, 17, 18, 19, 20,  # Row 1 (top row, excluding function keys and the first key)
+        29, 30, 31, 32, 33, 34,  # Row 2
+        44, 45, 46, 47, 48, 49,  # Row 3
+        57, 58, 59, 60, 61,      # Row 4 (shift and below)
+        # Right hand side
+        24, 25, 26, 27, 28,  # Row 1 (top row, starting right from the middle keys)
+        38, 39, 40, 41, 42, 43,  # Row 2
+        52, 53, 54, 55, 56,  # Row 3
+        62, 63, 64, 65, 66   # Row 4 (shift and below)
+    ]
 
-    # Function to map F-keys across the top row of ErgoDox
-    def map_f_keys():
-        f_keys = ["KC_F1", "KC_F2", "KC_F3", "KC_F4", "KC_F5", "KC_F6", "KC_TRNS", "KC_TRNS", "KC_F7", "KC_F8", "KC_F9", "KC_F10", "KC_F11", "KC_F12"]
-        for i in range(14):
-            ergodox_layer[i] = f_keys[i]
+    # Fill the ErgoDox layer based on the Unicorne layer mapping, skipping "KC_NO" and function keys
+    for u_index, key in enumerate(unicorne_layout['layers'][0]):
+        if key not in ["KC_NO", "KC_TRNS"] and not key.startswith("KC_F"):
+            # Map the key from Unicorne to the corresponding ErgoDox position
+            e_index = unicorne_to_ergodox_index_map[u_index]
+            ergodox_layer[e_index] = key
 
-    # Call the F-keys mapping function for the ErgoDox layout
-    map_f_keys()
+    # Add function keys manually for the ErgoDox layout, assuming F1-F12 are to be placed on the leftmost top row
+    for i, f_key in enumerate(["KC_F1", "KC_F2", "KC_F3", "KC_F4", "KC_F5", "KC_F6", "KC_TRNS", "KC_TRNS", "KC_F7", "KC_F8", "KC_F9", "KC_F10", "KC_F11", "KC_F12"]):
+        ergodox_layer[i] = f_key
 
-    # Iterate through the Unicorne layer and map each key to the ErgoDox layer based on the symbol definitions
-    for i, unicorne_key in enumerate(unicorne_json["layers"][0]):
-        if unicorne_key in key_mappings:
-            mapping = key_mappings[unicorne_key]
-            # Example mapping logic; you will need to refine this based on actual key positions
-            if mapping == "Left Alphabetics" or mapping == "Right Alphabetics" or mapping == "Inner" or mapping == "Side" or mapping == "Control":
-                # Map directly based on position; this is placeholder logic and needs adjustment
-                ergodox_layer[i] = unicorne_key
+    return [ergodox_layer]
 
-    # Note: The above logic is very simplified and assumes a direct mapping which may not be applicable.
-    # You will need to replace it with actual logic that maps Unicorne keys to their ErgoDox counterparts.
+def main():
+    unicorne_filename = input("Enter the full path of the Unicorne layout JSON file: ")
+    unicorne_layout = json.load(open(unicorne_filename, 'r'))
+    
+    ergodox_converted_layers = convert_unicorne_to_ergodox(unicorne_layout)
 
-    return ergodox_layer
+    # Prepare the output filename
+    output_filename = unicorne_filename.replace(".json", "_ergodox.json")
+    
+    # Construct the ErgoDox layout JSON structure
+    ergodox_layout = unicorne_layout  # Copy base structure from Unicorne
+    ergodox_layout["keyboard"] = "ergodox_ez"
+    ergodox_layout["keymap"] = unicorne_layout["keymap"] + "_ergodox"
+    ergodox_layout["layout"] = "LAYOUT_ergodox"  # Ensure this matches the ErgoDox layout name in QMK
+    ergodox_layout["layers"] = ergodox_converted_layers
 
-# Load the template and unicorne JSON
-with open('ergodox_template.json', 'r') as file:
-    ergodox_template_json = json.load(file)
+    # Save the ErgoDox layout JSON
+    with open(output_filename, 'w') as f:
+        json.dump(ergodox_layout, f, indent=4)
+    
+    print(f"Converted ErgoDox layout saved to: {output_filename}")
 
-with open('unicorne_template.json', 'r') as file:
-    unicorne_json = json.load(file)
-
-# Convert Unicorne to ErgoDox layout
-converted_layer = convert_unicorne_to_ergodox(unicorne_json, ergodox_template_json)
-
-# Assuming you'd save this to a file or use it further
-print(json.dumps(converted_layer, indent=4))
+if __name__ == "__main__":
+    main()
