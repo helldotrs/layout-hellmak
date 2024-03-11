@@ -1,59 +1,52 @@
 import json
 
-def convert_unicorne_to_ergodox(unicorne_layout):
-    ergodox_layers = []
+def convert_unicorne_to_ergodox(unicorne_json, ergodox_template_json):
+    # Initialize the ErgoDox layer with the template
+    ergodox_layer = ergodox_template_json["layers"][0].copy()
 
-    for layer in unicorne_layout["layers"]:
-        ergodox_layer = []
-        # Initialize ErgoDox layer with placeholders
-        for _ in range(14):  # ErgoDox has more keys per row in some cases
-            ergodox_layer.append(["KC_NO"] * 7 + ["KC_TRNS"] * 2 + ["KC_NO"] * 5)  # Adjust according to ErgoDox's layout
+    # Define mappings from Unicorne to ErgoDox based on the provided symbols
+    key_mappings = {
+        "KC_F": "F-keys",  # This will be handled separately due to its unique mapping
+        "KC_B": "Blank",
+        "KC_S": "Side",
+        "KC_L": "Left Alphabetics",
+        "KC_R": "Right Alphabetics",
+        "KC_I": "Inner",
+        "KC_C": "Control"
+    }
 
-        # Map Unicorn V3 keys to ErgoDox layout positions
-        for i, key in enumerate(layer):
-            row, col = divmod(i, 12)  # Assuming 12 keys per row in Unicorn V3 layout for simplicity
+    # Function to map F-keys across the top row of ErgoDox
+    def map_f_keys():
+        f_keys = ["KC_F1", "KC_F2", "KC_F3", "KC_F4", "KC_F5", "KC_F6", "KC_TRNS", "KC_TRNS", "KC_F7", "KC_F8", "KC_F9", "KC_F10", "KC_F11", "KC_F12"]
+        for i in range(14):
+            ergodox_layer[i] = f_keys[i]
 
-            # Directly map keys to the corresponding ErgoDox positions
-            # This is a simplification; actual mapping may require adjustments
-            if row < 3:  # For main key rows
-                if col < 6:  # Left side of the split
-                    ergodox_layer[row][col] = key
-                elif col > 5:  # Right side of the split
-                    ergodox_layer[row][col+2] = key  # Adjust for the middle gap in ErgoDox layout
-            elif row == 3:  # For bottom row, map to thumb cluster if needed
-                # Simplified: you might want to map these keys to thumb clusters or other areas in ErgoDox
-                if col < 6:  # Left thumb cluster area (simplified mapping)
-                    ergodox_layer[3][col] = key
-                elif col > 5:  # Right thumb cluster area (simplified mapping)
-                    ergodox_layer[3][col+2] = key
+    # Call the F-keys mapping function for the ErgoDox layout
+    map_f_keys()
 
-        ergodox_layers.append(ergodox_layer)
+    # Iterate through the Unicorne layer and map each key to the ErgoDox layer based on the symbol definitions
+    for i, unicorne_key in enumerate(unicorne_json["layers"][0]):
+        if unicorne_key in key_mappings:
+            mapping = key_mappings[unicorne_key]
+            # Example mapping logic; you will need to refine this based on actual key positions
+            if mapping == "Left Alphabetics" or mapping == "Right Alphabetics" or mapping == "Inner" or mapping == "Side" or mapping == "Control":
+                # Map directly based on position; this is placeholder logic and needs adjustment
+                ergodox_layer[i] = unicorne_key
 
-    return ergodox_layers
+    # Note: The above logic is very simplified and assumes a direct mapping which may not be applicable.
+    # You will need to replace it with actual logic that maps Unicorne keys to their ErgoDox counterparts.
 
-def main():
-    filename = input("Enter the filename of the Unicorn V3 layout JSON: ")
-    output_filename = filename.replace(".json", "_ergodox.json")
+    return ergodox_layer
 
-    try:
-        with open(filename, 'r') as file:
-            unicorne_layout = json.load(file)
+# Load the template and unicorne JSON
+with open('ergodox_template.json', 'r') as file:
+    ergodox_template_json = json.load(file)
 
-        ergodox_layers = convert_unicorne_to_ergodox(unicorne_layout)
+with open('unicorne_template.json', 'r') as file:
+    unicorne_json = json.load(file)
 
-        # Prepare the ErgoDox JSON structure
-        ergodox_json = unicorne_layout  # Start with the Unicorn V3 layout as a base for simplicity
-        ergodox_json["keyboard"] = "ergodox_ez"  # Change to ErgoDox
-        ergodox_json["keymap"] += "_ergodox"  # Append to keymap name
-        ergodox_json["layout"] = "LAYOUT_ergodox_pretty"  # Adjust layout name if necessary
-        ergodox_json["layers"] = ergodox_layers  # Replace layers with converted layers
+# Convert Unicorne to ErgoDox layout
+converted_layer = convert_unicorne_to_ergodox(unicorne_json, ergodox_template_json)
 
-        with open(output_filename, 'w') as file:
-            json.dump(ergodox_json, file, indent=4)
-
-        print(f"ErgoDox layout has been saved to {output_filename}")
-    except Exception as e:
-        print(f"Error: {e}")
-
-if __name__ == "__main__":
-    main()
+# Assuming you'd save this to a file or use it further
+print(json.dumps(converted_layer, indent=4))
