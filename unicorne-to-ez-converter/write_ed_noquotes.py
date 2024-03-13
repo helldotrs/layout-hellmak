@@ -1,99 +1,101 @@
 import argparse
 import re
-import json
 
 
-def generate_layers(num_layers):
+def generate_layer_string(num_layers):
+    layer_template = """
+    [
+      "KC_F12",
+      "KC_F11",
+      "KC_F10",
+      "KC_F9",
+      "KC_F8",
+      "KC_F7",
+      "KC_NO",
+
+      "KC_NO",
+      "KC_F1",
+      "KC_F2",
+      "KC_F3",
+      "KC_F4",
+      "KC_F5",
+      "KC_F6",
+
+      {0}row1pos01,
+      {0}row1pos02,
+      {0}row1pos03,
+      {0}row1pos04,
+      {0}row1pos05,
+      {0}row1pos06,
+      "KC_NO",
+
+      "KC_NO",
+      {0}row1pos07,
+      {0}row1pos08,
+      {0}row1pos09,
+      {0}row1pos10,
+      {0}row1pos11,
+      {0}row1pos12,
+
+      {0}row2pos01,
+      {0}row2pos02,
+      {0}row2pos03,
+      {0}row2pos04,
+      {0}row2pos05,
+      {0}row2pos06,
+
+      {0}row2pos07,
+      {0}row2pos08,
+      {0}row2pos09,
+      {0}row2pos10,
+      {0}row2pos11,
+      {0}row2pos12,
+
+      {0}row3pos01,
+      {0}row3pos02,
+      {0}row3pos03,
+      {0}row3pos04,
+      {0}row3pos05,
+      {0}row3pos06,
+      "KC_NO",
+
+      "KC_NO",
+      {0}row3pos07,
+      {0}row3pos08,
+      {0}row3pos09,
+      {0}row3pos10,
+      {0}row3pos11,
+      {0}row3pos12,
+
+      "KC_NO",
+      "KC_NO",
+      "KC_NO",
+      "KC_NO",
+      {0}row4pos01,
+      {0}row4pos06,
+      "KC_NO",
+      "KC_NO",
+      "KC_NO",
+      "KC_NO",
+      "KC_NO",
+      "KC_NO",
+      "KC_NO",
+      "KC_NO",
+      "KC_NO",
+      "KC_NO",
+      {0}row4pos02,
+      {0}row4pos03,
+      "KC_NO",
+      "KC_NO",
+      {0}row4pos05,
+      {0}row4pos06
+    ]
+    """
     layers = []
-    for i in range(1, num_layers + 1):  # Start from 1 to num_layers inclusive
-        layer = [
-            "KC_F12",
-            "KC_F11",
-            "KC_F10",
-            "KC_F9",
-            "KC_F8",
-            "KC_F7",
-            "KC_NO",
-
-            "KC_NO",
-            "KC_F1",
-            "KC_F2",
-            "KC_F3",
-            "KC_F4",
-            "KC_F5",
-            "KC_F6",
-
-            f"layer{i}row1pos01",
-            f"layer{i}row1pos02",
-            f"layer{i}row1pos03",
-            f"layer{i}row1pos04",
-            f"layer{i}row1pos05",
-            f"layer{i}row1pos06",
-            "KC_NO",
-
-            "KC_NO",
-            f"layer{i}row1pos07",
-            f"layer{i}row1pos08",
-            f"layer{i}row1pos09",
-            f"layer{i}row1pos10",
-            f"layer{i}row1pos11",
-            f"layer{i}row1pos12",
-
-            f"layer{i}row2pos01",
-            f"layer{i}row2pos02",
-            f"layer{i}row2pos03",
-            f"layer{i}row2pos04",
-            f"layer{i}row2pos05",
-            f"layer{i}row2pos06",
-
-            f"layer{i}row2pos07",
-            f"layer{i}row2pos08",
-            f"layer{i}row2pos09",
-            f"layer{i}row2pos10",
-            f"layer{i}row2pos11",
-            f"layer{i}row2pos12",
-
-            f"layer{i}row3pos01",
-            f"layer{i}row3pos02",
-            f"layer{i}row3pos03",
-            f"layer{i}row3pos04",
-            f"layer{i}row3pos05",
-            f"layer{i}row3pos06",
-            "KC_NO",
-
-            "KC_NO",
-            f"layer{i}row3pos07",
-            f"layer{i}row3pos08",
-            f"layer{i}row3pos09",
-            f"layer{i}row3pos10",
-            f"layer{i}row3pos11",
-            f"layer{i}row3pos12",
-
-            "KC_NO",
-            "KC_NO",
-            "KC_NO",
-            "KC_NO",
-            f"layer{i}row4pos01",
-            f"layer{i}row4pos06",
-            "KC_NO",
-            "KC_NO",
-            "KC_NO",
-            "KC_NO",
-            "KC_NO",
-            "KC_NO",
-            "KC_NO",
-            "KC_NO",
-            "KC_NO",
-            "KC_NO",
-            f"layer{i}row4pos02",
-            f"layer{i}row4pos03",
-            "KC_NO",
-            "KC_NO",
-            f"layer{i}row4pos05",
-            f"layer{i}row4pos06"
-        ]
-        layers.append(layer)
-    return layers
+    for i in range(1, num_layers + 1):
+        layer = layer_template.format(f"layer{i}")
+        layers.append(layer.strip())
+    return ",\n".join(layers)
 
 
 def main():
@@ -118,25 +120,24 @@ def main():
             match = re.search(r'layer(\d+)', last_line)
             if match:
                 num_layers = int(match.group(1))
-                layers = generate_layers(num_layers)
+                layers_string = generate_layer_string(num_layers)
 
-                # Prefix
-                keyboard_config = {
-                    "version": 1,
-                    "notes": "",
-                    "documentation": "",
-                    "keyboard": "ergodox_ez/base",
-                    "keymap": "hellmak-ergodox",
-                    "layout": "LAYOUT_ergodox_pretty",
-                    "layers": layers,
-                    "author": ""
-                }
+                config_template = f"""{{
+  "version": 1,
+  "notes": "",
+  "documentation": "",
+  "keyboard": "ergodox_ez/base",
+  "keymap": "hellmak-ergodox",
+  "layout": "LAYOUT_ergodox_pretty",
+  "layers": [
+    {layers_string}
+  ],
+  "author": ""
+}}"""
 
-                # Write the keyboard configuration to the output file
                 with open(args.output, 'w') as output_file:
-                    json.dump(keyboard_config, output_file, indent=2)
-
-                print(f"Configuration has been written to {args.output}")
+                    output_file.write(config_template)
+                print(f"Configuration written to {args.output}")
             else:
                 print("No 'layer[number]' pattern found in the last line.")
 
@@ -146,3 +147,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
